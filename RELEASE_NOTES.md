@@ -1,5 +1,5 @@
 # 194XDD - Arcade Shooter (Release v1.0)
-Copyright (c) 2026. All Rights Reserved.
+
 
 ## 📖 Welcome Pilot!
 **194XDD - Counter Attack Protocol** is a fast-paced, high-performance web-based arcade shoot 'em up (shmup) combining classical mechanics of legendary WWII titles with modern visual flourishes and secondary weapon upgrades inspired by *Sky Force Anniversary* and *Sky Force Reloaded*.
@@ -73,3 +73,9 @@ No heavyweight compilers or standard libraries are required. Simply compile usin
     ├── input.js    <-- Non-blocking Controllers
     └── main.js     <-- App State Handler
 ```
+
+---
+
+## 📄 License
+This project is released under the [MIT License](file:///c:/Users/DD/Desktop/1941DD/LICENSE). See the `LICENSE` file for full details.
+

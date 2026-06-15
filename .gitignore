@@ -1,0 +1,16 @@
+# Compiled binaries
+*.exe
+bin/
+obj/
+
+# IDE files
+.vs/
+.vscode/
+
+# OS generated files
+Thumbs.db
+.DS_Store
+
+# Node/npm just in case
+node_modules/
+*.log
