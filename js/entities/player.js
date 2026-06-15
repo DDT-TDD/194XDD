@@ -120,8 +120,10 @@ export class Player {
             this.maxShield = 0;
         } else if (this.type === 'zero') {
             this.maxHealth = 65 + (this.upgrades.armor - 1) * 14;
-            this.speed = 330 + (this.upgrades.speed - 1) * 40;
+            // Agility Boost: scales base speed and maximum loop maneuver capacity
+            this.speed = 330 + (this.upgrades.speed - 1) * 40 + (this.upgrades.special) * 15;
             this.maxShield = 0;
+            this.loopMaxCount = 3 + this.upgrades.special;
         }
 
         // Recalculate fire cooldown and missile cooldown
@@ -337,39 +339,39 @@ export class Player {
         if (this.type === 'p38') {
             if (audio) audio.playShootHeavy();
             if (lvl === 1) {
-                // Tier 1: Twin standard homing rockets
-                projectiles.push(new Projectile(this.x - 24, this.y, -80, -300, false, 'missile', 40));
-                projectiles.push(new Projectile(this.x + 24, this.y, 80, -300, false, 'missile', 40));
+                // Tier 1: Twin standard homing rockets (targetSpeed=550, launch at -500)
+                projectiles.push(new Projectile(this.x - 24, this.y, -80, -500, false, 'missile', 40));
+                projectiles.push(new Projectile(this.x + 24, this.y, 80, -500, false, 'missile', 40));
             } else if (lvl === 2) {
-                // Tier 2: Quad cluster rockets
-                projectiles.push(new Projectile(this.x - 32, this.y, -140, -250, false, 'missile_cluster', 50));
-                projectiles.push(new Projectile(this.x - 12, this.y, -40, -280, false, 'missile_cluster', 50));
-                projectiles.push(new Projectile(this.x + 12, this.y, 40, -280, false, 'missile_cluster', 50));
-                projectiles.push(new Projectile(this.x + 32, this.y, 140, -250, false, 'missile_cluster', 50));
+                // Tier 2: Quad cluster rockets (targetSpeed=400, launch at -350 to -380)
+                projectiles.push(new Projectile(this.x - 32, this.y, -140, -350, false, 'missile_cluster', 50));
+                projectiles.push(new Projectile(this.x - 12, this.y, -40, -380, false, 'missile_cluster', 50));
+                projectiles.push(new Projectile(this.x + 12, this.y, 40, -380, false, 'missile_cluster', 50));
+                projectiles.push(new Projectile(this.x + 32, this.y, 140, -350, false, 'missile_cluster', 50));
             } else {
-                // Tier 3: Hex-burst micro-missiles
-                projectiles.push(new Projectile(this.x - 30, this.y, -180, -360, false, 'missile_micro', 22));
-                projectiles.push(new Projectile(this.x - 18, this.y, -100, -380, false, 'missile_micro', 22));
-                projectiles.push(new Projectile(this.x - 6, this.y, -30, -400, false, 'missile_micro', 22));
-                projectiles.push(new Projectile(this.x + 6, this.y, 30, -400, false, 'missile_micro', 22));
-                projectiles.push(new Projectile(this.x + 18, this.y, 100, -380, false, 'missile_micro', 22));
-                projectiles.push(new Projectile(this.x + 30, this.y, 180, -360, false, 'missile_micro', 22));
+                // Tier 3: Hex-burst micro-missiles (targetSpeed=750, launch at -650 to -700)
+                projectiles.push(new Projectile(this.x - 30, this.y, -180, -650, false, 'missile_micro', 22));
+                projectiles.push(new Projectile(this.x - 18, this.y, -100, -680, false, 'missile_micro', 22));
+                projectiles.push(new Projectile(this.x - 6, this.y, -30, -700, false, 'missile_micro', 22));
+                projectiles.push(new Projectile(this.x + 6, this.y, 30, -700, false, 'missile_micro', 22));
+                projectiles.push(new Projectile(this.x + 18, this.y, 100, -680, false, 'missile_micro', 22));
+                projectiles.push(new Projectile(this.x + 30, this.y, 180, -650, false, 'missile_micro', 22));
             }
         } else if (this.type === 'pancake') {
             if (audio) audio.playShootLaser();
             if (lvl === 1) {
-                // Tier 1: Twin narrow laser-guided tracking missiles
-                projectiles.push(new Projectile(this.x - 20, this.y, -100, -400, false, 'laser_missile', 35));
-                projectiles.push(new Projectile(this.x + 20, this.y, 100, -400, false, 'laser_missile', 35));
+                // Tier 1: Twin narrow laser-guided tracking missiles (targetSpeed=650, launch at -580)
+                projectiles.push(new Projectile(this.x - 20, this.y, -100, -580, false, 'laser_missile', 35));
+                projectiles.push(new Projectile(this.x + 20, this.y, 100, -580, false, 'laser_missile', 35));
             } else if (lvl === 2) {
-                // Tier 2: Dual tracking laser missiles
-                projectiles.push(new Projectile(this.x - 24, this.y, -150, -350, false, 'laser_missile', 65));
-                projectiles.push(new Projectile(this.x + 24, this.y, 150, -350, false, 'laser_missile', 65));
+                // Tier 2: Dual tracking laser missiles (targetSpeed=650, launch at -580)
+                projectiles.push(new Projectile(this.x - 24, this.y, -150, -580, false, 'laser_missile', 65));
+                projectiles.push(new Projectile(this.x + 24, this.y, 150, -580, false, 'laser_missile', 65));
             } else {
-                // Tier 3: Triple rapid laser darts
-                projectiles.push(new Projectile(this.x - 18, this.y, -220, -500, false, 'laser_dart', 30));
-                projectiles.push(new Projectile(this.x, this.y, 0, -550, false, 'laser_dart', 35));
-                projectiles.push(new Projectile(this.x + 18, this.y, 220, -500, false, 'laser_dart', 30));
+                // Tier 3: Triple rapid laser darts (targetSpeed=850, launch at -750 to -800)
+                projectiles.push(new Projectile(this.x - 18, this.y, -220, -750, false, 'laser_dart', 30));
+                projectiles.push(new Projectile(this.x, this.y, 0, -800, false, 'laser_dart', 35));
+                projectiles.push(new Projectile(this.x + 18, this.y, 220, -750, false, 'laser_dart', 30));
             }
         } else if (this.type === 'mitchell') {
             if (audio) audio.playShootHeavy();
@@ -390,34 +392,38 @@ export class Player {
             // Corsair: Heavy Air-Ground HVAR rockets
             if (audio) audio.playShootHeavy();
             if (lvl === 1) {
-                projectiles.push(new Projectile(this.x - 30, this.y, -60, -300, false, 'missile_cluster', 55));
-                projectiles.push(new Projectile(this.x + 30, this.y, 60, -300, false, 'missile_cluster', 55));
+                // targetSpeed=400, launch at -380
+                projectiles.push(new Projectile(this.x - 30, this.y, -60, -380, false, 'missile_cluster', 55));
+                projectiles.push(new Projectile(this.x + 30, this.y, 60, -380, false, 'missile_cluster', 55));
             } else if (lvl === 2) {
-                projectiles.push(new Projectile(this.x - 40, this.y, -80, -280, false, 'missile_cluster', 60));
-                projectiles.push(new Projectile(this.x, this.y, 0, -310, false, 'missile_cluster', 60));
-                projectiles.push(new Projectile(this.x + 40, this.y, 80, -280, false, 'missile_cluster', 60));
+                // targetSpeed=400, launch at -350 to -380
+                projectiles.push(new Projectile(this.x - 40, this.y, -80, -350, false, 'missile_cluster', 60));
+                projectiles.push(new Projectile(this.x, this.y, 0, -380, false, 'missile_cluster', 60));
+                projectiles.push(new Projectile(this.x + 40, this.y, 80, -350, false, 'missile_cluster', 60));
             } else {
                 // Tier 3: Full ripple salvo of 5 cluster rockets
                 for (let i = 0; i < 5; i++) {
                     const vx = (i - 2) * 55;
-                    projectiles.push(new Projectile(this.x + (i - 2) * 14, this.y, vx, -290, false, 'missile_cluster', 55));
+                    projectiles.push(new Projectile(this.x + (i - 2) * 14, this.y, vx, -380, false, 'missile_cluster', 55));
                 }
             }
         } else if (this.type === 'zero') {
             // Zero: Agile homing missiles (fast, precise)
             if (audio) audio.playShootLaser();
             if (lvl === 1) {
-                projectiles.push(new Projectile(this.x - 16, this.y, -60, -420, false, 'laser_missile', 38));
-                projectiles.push(new Projectile(this.x + 16, this.y, 60, -420, false, 'laser_missile', 38));
+                // targetSpeed=650, launch at -580
+                projectiles.push(new Projectile(this.x - 16, this.y, -60, -580, false, 'laser_missile', 38));
+                projectiles.push(new Projectile(this.x + 16, this.y, 60, -580, false, 'laser_missile', 38));
             } else if (lvl === 2) {
-                projectiles.push(new Projectile(this.x - 20, this.y, -90, -400, false, 'laser_missile', 45));
-                projectiles.push(new Projectile(this.x, this.y, 0, -450, false, 'laser_dart', 40));
-                projectiles.push(new Projectile(this.x + 20, this.y, 90, -400, false, 'laser_missile', 45));
+                // targetSpeed=650/850
+                projectiles.push(new Projectile(this.x - 20, this.y, -90, -580, false, 'laser_missile', 45));
+                projectiles.push(new Projectile(this.x, this.y, 0, -750, false, 'laser_dart', 40));
+                projectiles.push(new Projectile(this.x + 20, this.y, 90, -580, false, 'laser_missile', 45));
             } else {
-                // Tier 3: Six laser darts burst – ultra agile
+                // Tier 3: Six laser darts burst – ultra agile (targetSpeed=850, launch at -780)
                 for (let i = 0; i < 6; i++) {
                     const vx = (i - 2.5) * 70;
-                    projectiles.push(new Projectile(this.x, this.y, vx, -480, false, 'laser_dart', 30));
+                    projectiles.push(new Projectile(this.x, this.y, vx, -780, false, 'laser_dart', 30));
                 }
             }
         }
@@ -501,8 +507,25 @@ export class Player {
                 projectiles.push(new Projectile(this.x - 24, this.y - 10, -320, -350, false, 'normal', 10));
                 projectiles.push(new Projectile(this.x + 24, this.y - 10, 320, -350, false, 'normal', 10));
             }
-            if (this.upgrades.weapon >= 2) {
-                projectiles.push(new Projectile(this.x, this.y + 24, (Math.random() - 0.5) * 100, 450, false, 'normal', 8));
+            // Mitchell rear defense turret
+            const turretLvl = this.upgrades.special;
+            if (this.upgrades.weapon >= 2 || turretLvl > 0) {
+                const dmg = 8 + turretLvl * 6; // caliber (damage) scales with special upgrade
+                const bulletType = turretLvl >= 2 ? 'heavy' : 'normal';
+                
+                if (turretLvl === 3) {
+                    // Level 3: Triple rear fire spread
+                    projectiles.push(new Projectile(this.x - 10, this.y + 24, -40, 450, false, bulletType, dmg));
+                    projectiles.push(new Projectile(this.x, this.y + 24, 0, 470, false, bulletType, dmg + 2));
+                    projectiles.push(new Projectile(this.x + 10, this.y + 24, 40, 450, false, bulletType, dmg));
+                } else if (turretLvl === 2) {
+                    // Level 2: Twin rear fire
+                    projectiles.push(new Projectile(this.x - 8, this.y + 24, -15, 450, false, bulletType, dmg));
+                    projectiles.push(new Projectile(this.x + 8, this.y + 24, 15, 450, false, bulletType, dmg));
+                } else {
+                    // Level 0 or 1: Single rear fire
+                    projectiles.push(new Projectile(this.x, this.y + 24, (Math.random() - 0.5) * 40, 450, false, bulletType, dmg));
+                }
             }
         } else if (this.type === 'corsair') {
             // F4U Corsair: 6x .50cal wing-mounted guns (3 per wing)
@@ -548,8 +571,8 @@ export class Player {
             }
         }
 
-        // Auxiliary Wingmen support fire
-        if (this.upgrades.special > 0) {
+        // Auxiliary Wingmen support fire (P-38 and Corsair only)
+        if ((this.type === 'p38' || this.type === 'corsair') && this.upgrades.special > 0) {
             const numWingmen = this.upgrades.special;
             if (numWingmen >= 1) {
                 projectiles.push(new Projectile(this.x - 42, this.y + 10, 0, bulletSpeed * 0.95, false, 'normal', 8));
@@ -633,8 +656,8 @@ export class Player {
  
         ctx.restore();
 
-        // Draw helper Wingmen beside player
-        if (this.upgrades.special > 0 && !this.isLooping) {
+        // Draw helper Wingmen beside player (P-38 and Corsair only)
+        if ((this.type === 'p38' || this.type === 'corsair') && this.upgrades.special > 0 && !this.isLooping) {
             const numWingmen = this.upgrades.special;
             const wImg = Assets.wingman;
             if (wImg) {

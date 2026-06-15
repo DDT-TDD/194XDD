@@ -77,5 +77,5 @@ No heavyweight compilers or standard libraries are required. Simply compile usin
 ---
 
 ## 📄 License
-This project is released under the [MIT License](file:///c:/Users/DD/Desktop/1941DD/LICENSE). See the `LICENSE` file for full details.
+This project is released under the [MIT License](LICENSE). See the `LICENSE` file for full details.
 

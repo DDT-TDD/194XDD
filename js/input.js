@@ -69,8 +69,10 @@ export const Input = {
         // 2. Mouse Listeners
         canvas.addEventListener('mousemove', (e) => {
             this.updateMouseCoords(e);
-            // Mouse move automatically engages mouse control mode
-            this.mode = 'mouse';
+            // Only switch to mouse control mode if the user is actively dragging (holding click)
+            if (this.isMouseDown) {
+                this.mode = 'mouse';
+            }
         });
 
         canvas.addEventListener('mousedown', (e) => {

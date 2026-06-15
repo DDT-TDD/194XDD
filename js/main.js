@@ -600,7 +600,8 @@ const App = {
                 btn.disabled = true;
                 costLabel.innerText = "MAX";
             } else {
-                const cost = this.upgradeCosts[upgradeType][level - 1];
+                const costIndex = upgradeType === 'special' ? level : level - 1;
+                const cost = this.upgradeCosts[upgradeType][costIndex];
                 costLabel.innerText = `★ ${cost}`;
                 btn.disabled = this.profile.stars < cost;
             }
@@ -617,7 +618,8 @@ const App = {
         const ups = this.profile.upgrades[type];
         const currentLvl = ups[upgradeType];
         
-        const cost = this.upgradeCosts[upgradeType][currentLvl - 1];
+        const costIndex = upgradeType === 'special' ? currentLvl : currentLvl - 1;
+        const cost = this.upgradeCosts[upgradeType][costIndex];
         if (this.profile.stars >= cost) {
             this.profile.stars -= cost;
             ups[upgradeType]++;

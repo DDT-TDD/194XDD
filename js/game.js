@@ -156,9 +156,30 @@ export class Game {
             }
         }
 
+        // Build list of targetable enemies, including active boss components
+        let targetableEnemies = [...this.enemies];
+        if (this.boss) {
+            if (this.boss.wingLeft && this.boss.wingLeft.active && this.boss.wingLeft.health > 0) {
+                targetableEnemies.push(this.boss.wingLeft);
+            }
+            if (this.boss.wingRight && this.boss.wingRight.active && this.boss.wingRight.health > 0) {
+                targetableEnemies.push(this.boss.wingRight);
+            }
+            if (this.boss.core && this.boss.core.active && this.boss.core.health > 0) {
+                targetableEnemies.push(this.boss.core);
+            }
+            if (this.boss.turrets) {
+                this.boss.turrets.forEach(t => {
+                    if (t.active && t.obj && t.obj.active && t.obj.health > 0) {
+                        targetableEnemies.push(t.obj);
+                    }
+                });
+            }
+        }
+
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
             const proj = this.projectiles[i];
-            proj.update(dt, this.width, this.height, this.enemies, this.particles);
+            proj.update(dt, this.width, this.height, targetableEnemies, this.particles);
             
             // Check if carpet bomb timed out
             if (proj.type === 'carpet_bomb' && proj.detonationTimer <= 0) {
