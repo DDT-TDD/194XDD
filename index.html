@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>194XDD - Modern Web Arcade Shooter</title>
+    <!-- Modern Typography: Orbitron for retro arcade, Rajdhani for futuristic details -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app-container">
+        <div id="game-wrapper">
+            <!-- Main Game Canvas -->
+            <canvas id="game-canvas"></canvas>
+
+            <!-- Virtual Controls for Touch / Mouse Users -->
+            <div id="virtual-controls" class="controls-hidden">
+                <button id="btn-hud-loop" class="virtual-btn btn-loop-glow">LOOP</button>
+                <div class="virtual-right-group">
+                    <button id="btn-hud-missile" class="virtual-btn btn-missile-glow">MISSILE</button>
+                    <button id="btn-hud-bomb" class="virtual-btn btn-bomb-glow">BOMB</button>
+                </div>
+            </div>
+
+        <!-- Dynamic Game HUD (Visible during gameplay) -->
+        <div id="hud-overlay" class="hud-hidden">
+            <div class="hud-section hud-left">
+                <div class="hud-stat">
+                    <span class="hud-label">SCORE</span>
+                    <span id="hud-score" class="hud-value glowing-text">000000</span>
+                </div>
+                <div class="hud-stat">
+                    <span class="hud-label">STARS</span>
+                    <span id="hud-stars" class="hud-value text-accent">0</span>
+                </div>
+                <div class="hud-stat">
+                    <span class="hud-label">KILLS</span>
+                    <span id="hud-kills-pct" class="hud-value text-info">0%</span>
+                </div>
+                <div class="hud-stat" style="margin-top: 6px;">
+                    <span class="hud-label">BOMBS (B)</span>
+                    <span id="hud-bombs" class="hud-value text-danger" style="font-size: 16px;">3</span>
+                </div>
+                <div class="hud-stat" style="margin-top: 4px;">
+                    <span class="hud-label" id="hud-missile-label">MISSILE (F)</span>
+                    <span id="hud-missiles" class="hud-value text-success" style="font-size: 16px;">READY</span>
+                </div>
+            </div>
+            
+            <div class="hud-section hud-center">
+                <div class="hud-progress-container">
+                    <span class="hud-progress-label">STAGE PROGRESS</span>
+                    <div class="hud-progress-bar-bg">
+                        <div id="hud-stage-progress" class="hud-progress-bar-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud-section hud-right">
+                <div class="hud-stat-bars">
+                    <div class="hud-stat-bar-container">
+                        <span class="hud-bar-label">HULL</span>
+                        <div class="hud-bar-bg">
+                            <div id="hud-health-bar" class="hud-bar-fill health-color" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="hud-stat-bar-container" id="hud-shield-container">
+                        <span class="hud-bar-label">SHIELD</span>
+                        <div class="hud-bar-bg">
+                            <div id="hud-shield-bar" class="hud-bar-fill shield-color" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hud-loops">
+                    <span class="hud-label">LOOPS</span>
+                    <div class="hud-loop-indicators" id="hud-loop-container">
+                        <!-- Filled dynamically based on remaining loop maneuvers -->
+                    </div>
+                </div>
+                <div class="hud-stat" style="margin-top: 5px;">
+                    <span class="hud-label">WEAPON</span>
+                    <span id="hud-weapon-tier" class="hud-value" style="font-size: 13px; color: #00e676; text-shadow: 0 0 6px #00e676;">WPN I</span>
+                </div>
+            </div>
+
+            <!-- Danger Alert and Boss Warning overlays -->
+            <div id="warning-overlay" class="warning-hidden">
+                <div class="warning-scanner"></div>
+                <span class="warning-text">WARNING: INCOMING BOSS AIRCRAFT</span>
+            </div>
+        </div>
+
+        <!-- Stage Clear Overlay -->
+        <div id="stage-clear-overlay" class="stage-clear-hidden">
+            <h2 class="glowing-text text-accent">STAGE CLEAR</h2>
+            <div class="medal-container">
+                <span id="stage-clear-medal" class="medal-gold">GOLD MEDAL</span>
+            </div>
+            <div class="stage-clear-stats">
+                <p>ENEMIES DESTROYED: <span id="stage-clear-kills">0/0</span> (<span id="stage-clear-kills-pct">0%</span>)</p>
+            </div>
+            <button id="btn-next-stage" class="btn btn-primary btn-glow">CONTINUE MISSION</button>
+        </div>
+
+        <!-- Glassmorphism Interactive User Interface Overlay -->
+        <div id="ui-overlay">
+            
+            <!-- 1. MAIN MENU -->
+            <div id="menu-screen" class="ui-screen active">
+                <div class="brand-header">
+                    <h1 class="game-title">194<span class="glowing-accent">X</span><span class="superscript">DD</span></h1>
+                    <p class="game-tagline font-sub">COUNTER-ATTACK PROTOCOL</p>
+                </div>
+
+                <div class="menu-content">
+                    <div class="plane-preview-carousel">
+                        <h3>SELECT YOUR FIGHTER</h3>
+                        <div class="carousel-container">
+                            <button id="prev-plane" class="carousel-btn">&lt;</button>
+                            <div class="carousel-view">
+                                <canvas id="plane-preview-canvas" width="160" height="160"></canvas>
+                                <div class="plane-info">
+                                    <h2 id="preview-plane-name" class="glowing-text">P-38 LIGHTNING</h2>
+                                    <p id="preview-plane-desc">Classic interceptor. Reliable firepower and solid maneuvers.</p>
+                                </div>
+                            </div>
+                            <button id="next-plane" class="carousel-btn">&gt;</button>
+                        </div>
+                        <div class="plane-stats-preview">
+                            <div class="stat-row">
+                                <span>SPEED</span>
+                                <div class="stat-bar-bg"><div id="stat-bar-speed" class="stat-bar-fill" style="width: 60%"></div></div>
+                            </div>
+                            <div class="stat-row">
+                                <span>ARMOR</span>
+                                <div class="stat-bar-bg"><div id="stat-bar-armor" class="stat-bar-fill" style="width: 50%"></div></div>
+                            </div>
+                            <div class="stat-row">
+                                <span>FIREPOWER</span>
+                                <div class="stat-bar-bg"><div id="stat-bar-fire" class="stat-bar-fill" style="width: 60%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="menu-actions">
+                        <button id="btn-start" class="btn btn-primary btn-glow">LAUNCH MISSION</button>
+                        <button id="btn-hangar" class="btn btn-secondary">ENTER HANGAR</button>
+                        <button id="btn-help" class="btn btn-secondary">HOW TO PLAY</button>
+                        <button id="btn-leaderboard" class="btn btn-secondary">LEADERBOARD</button>
+                        <button id="btn-settings" class="btn btn-secondary">SETTINGS & CONTROLS</button>
+                    </div>
+                </div>
+
+                <div class="audio-opt-in" id="audio-nag">
+                    <p>Click anywhere to enable synthesized dynamic sound & music</p>
+                </div>
+            </div>
+
+            <!-- 2. HANGAR / UPGRADE SCREEN -->
+            <div id="hangar-screen" class="ui-screen">
+                <div class="screen-header">
+                    <h2>MILITARY HANGAR & REPAIRS</h2>
+                    <div class="star-counter">
+                        <span class="star-icon">★</span>
+                        <span id="hangar-stars" class="text-accent font-sub">0</span>
+                    </div>
+                </div>
+
+                <div class="hangar-layout">
+                    <div class="hangar-plane-select">
+                        <div class="carousel-container">
+                            <button id="hangar-prev-plane" class="carousel-btn">&lt;</button>
+                            <canvas id="hangar-plane-canvas" width="200" height="200"></canvas>
+                            <button id="hangar-next-plane" class="carousel-btn">&gt;</button>
+                        </div>
+                        <h3 id="hangar-plane-name" class="glowing-text">P-38 LIGHTNING</h3>
+                        <p id="hangar-plane-description" class="plane-description-text"></p>
+                    </div>
+
+                    <div class="hangar-upgrades-grid">
+                        <!-- Upgrade Item: Weapon -->
+                        <div class="upgrade-card" data-upgrade="weapon">
+                            <div class="upgrade-details">
+                                <span class="upgrade-title">WEAPON SYSTEMS</span>
+                                <span class="upgrade-level" id="up-level-weapon">LVL 1</span>
+                                <p class="upgrade-desc">Increases bullet density and upgrades spread channels.</p>
+                            </div>
+                            <div class="upgrade-action">
+                                <button class="btn btn-upgrade" id="btn-up-weapon">
+                                    UPGRADE <span class="cost-tag" id="cost-weapon">★ 50</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Upgrade Item: Speed -->
+                        <div class="upgrade-card" data-upgrade="speed">
+                            <div class="upgrade-details">
+                                <span class="upgrade-title">ENGINE INTAKE</span>
+                                <span class="upgrade-level" id="up-level-speed">LVL 1</span>
+                                <p class="upgrade-desc">Increases engine agility and max speed controls.</p>
+                            </div>
+                            <div class="upgrade-action">
+                                <button class="btn btn-upgrade" id="btn-up-speed">
+                                    UPGRADE <span class="cost-tag" id="cost-speed">★ 40</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Upgrade Item: Armor -->
+                        <div class="upgrade-card" data-upgrade="armor">
+                            <div class="upgrade-details">
+                                <span class="upgrade-title">REINFORCED HULL</span>
+                                <span class="upgrade-level" id="up-level-armor">LVL 1</span>
+                                <p class="upgrade-desc">Increases maximum health bar and structural resistance.</p>
+                            </div>
+                            <div class="upgrade-action">
+                                <button class="btn btn-upgrade" id="btn-up-armor">
+                                    UPGRADE <span class="cost-tag" id="cost-armor">★ 40</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Upgrade Item: Special (Wingmen or Shield or Bomb) -->
+                        <div class="upgrade-card" data-upgrade="special">
+                            <div class="upgrade-details">
+                                <span class="upgrade-title" id="up-title-special">AUXILIARY SUPPORT</span>
+                                <span class="upgrade-level" id="up-level-special">LVL 0</span>
+                                <p class="upgrade-desc" id="up-desc-special">Adds defensive wingmen firing auxiliary bullets.</p>
+                            </div>
+                            <div class="upgrade-action">
+                                <button class="btn btn-upgrade" id="btn-up-special">
+                                    UPGRADE <span class="cost-tag" id="cost-special">★ 80</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="screen-footer">
+                    <button id="hangar-back" class="btn btn-secondary">BACK TO BASE</button>
+                </div>
+            </div>
+
+            <!-- 3. SETTINGS SCREEN -->
+            <div id="settings-screen" class="ui-screen">
+                <div class="screen-header">
+                    <h2>SYSTEM UTILITIES</h2>
+                </div>
+                
+                <div class="settings-content">
+                    <div class="settings-group">
+                        <h3>CONTROLS CONFIGURATION</h3>
+                        <div class="control-toggle-box">
+                            <button id="ctrl-keyboard" class="btn btn-toggle active">KEYBOARD (WASD + Space + Shift)</button>
+                            <button id="ctrl-mouse" class="btn btn-toggle">MOUSE (Cursor Follow + Auto fire)</button>
+                        </div>
+                        <p class="control-help-text" id="control-help-desc">
+                            Move with WASD or Arrow Keys. Shoot with Space. Press Shift or C to execute a Loop-the-Loop maneuver (invulnerability).
+                        </p>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>AUDIO VOLUME</h3>
+                        <div class="volume-slider-box">
+                            <div class="slider-row">
+                                <span>MUSIC</span>
+                                <input type="range" id="vol-music" min="0" max="100" value="50">
+                            </div>
+                            <div class="slider-row">
+                                <span>SFX</span>
+                                <input type="range" id="vol-sfx" min="0" max="100" value="70">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>SCREEN DISPLAY</h3>
+                        <div class="control-toggle-box">
+                            <button id="btn-fullscreen" class="btn btn-toggle">GO FULLSCREEN</button>
+                        </div>
+                        <p class="control-help-text">
+                            Toggle absolute full-screen mode to run 194XDD at maximum scale.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="screen-footer">
+                    <button id="settings-back" class="btn btn-secondary">BACK</button>
+                </div>
+            </div>
+
+            <!-- HELP / FLIGHT MANUAL SCREEN -->
+            <div id="help-screen" class="ui-screen">
+                <div class="screen-header">
+                    <h2>FLIGHT MANUAL & INTEL</h2>
+                </div>
+                
+                <div class="help-content">
+                    <div class="help-group">
+                        <h3>KEYBOARD COMMAND SYSTEM</h3>
+                        <div class="help-grid">
+                            <div class="help-row">
+                                <span class="help-key">W, A, S, D / ARROWS</span>
+                                <span class="help-action">Move Fighter Aircraft</span>
+                            </div>
+                            <div class="help-row">
+                                <span class="help-key">SPACEBAR</span>
+                                <span class="help-action">Primary Fire (Hold to Charge Shot)</span>
+                            </div>
+                            <div class="help-row">
+                                <span class="help-key">B / X</span>
+                                <span class="help-action">Tactical Screen-Clearing Bomb</span>
+                            </div>
+                            <div class="help-row">
+                                <span class="help-key">F / V</span>
+                                <span class="help-action">Launch Dual Homing Missiles</span>
+                            </div>
+                            <div class="help-row">
+                                <span class="help-key">C / SHIFT</span>
+                                <span class="help-action">Execute Loop-the-Loop (Invulnerability)</span>
+                            </div>
+                            <div class="help-row">
+                                <span class="help-key">ESC / P</span>
+                                <span class="help-action">Tactical Pause / Resume</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-group">
+                        <h3>MOUSE & TOUCH COMMAND SYSTEM</h3>
+                        <div class="help-grid">
+                            <div class="help-row">
+                                <span class="help-key">DRAG MOUSE/FINGER</span>
+                                <span class="help-action">Fighter follows cursor smoothly</span>
+                            </div>
+                            <div class="help-row">
+                                <span class="help-key">LEFT CLICK / HOLD</span>
+                                <span class="help-action">Primary weapon is fired automatically</span>
+                            </div>
+                            <div class="help-row">
+                                <span class="help-key">RIGHT CLICK</span>
+                                <span class="help-action">Trigger Screen-Clearing Bomb</span>
+                            </div>
+                            <div class="help-row">
+                                <span class="help-key">ON-SCREEN BUTTONS</span>
+                                <span class="help-action">Tap LOOP / MISSILE / BOMB indicators</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-group">
+                        <h3>AIRCRAFT INTELLIGENCE</h3>
+                        <div class="help-planes-spec">
+                            <p><strong>P-38 LIGHTNING:</strong> Swift and balanced twin-engine interceptor. Wingmen upgrades add parallel support fighters.</p>
+                            <p><strong>XF-5U PANCAKE:</strong> Advanced disk design with laser cannons. Automatically charges and regenerates an Energy Shield.</p>
+                            <p><strong>B-25 MITCHELL:</strong> Armored fortress firing heavy explosive shells. Features an automatic tail gunner firing behind you.</p>
+                        </div>
+                    </div>
+
+                    <div class="help-group">
+                        <h3>CAMPAIGN THEATER & ZONES</h3>
+                        <div class="help-planes-spec">
+                            <p><strong>STAGE 1-4:</strong> Coral Reefs, Volcanic Trench, Midnight Metropolis, Sky Armada Fortress.</p>
+                            <p><strong>STAGE 5 (FROZEN TUNDRA):</strong> Glacial cyan arctic waters with snow-capped islands and drifting snow hazard.</p>
+                            <p><strong>STAGE 6 (DESERT CANYON):</strong> Terracotta sands, red canyon rock barriers, and sandstorm dust screen.</p>
+                            <p><strong>STAGE 7 (ORBIT BOUNDARY):</strong> Starry deep space starfield with drifting solar-panel satellite debris.</p>
+                            <p><strong>STAGE 8 (DIMENSIONAL CORE):</strong> Neon purple scrolling grid with cyber coordinates. Final flagship core defense.</p>
+                        </div>
+                    </div>
+
+                    <div class="help-group">
+                        <h3>UPGRADABLE HOMING MISSILE TIERS</h3>
+                        <div class="help-planes-spec">
+                            <p>Secondary missiles (F Key) launch tier shifts based on your Hangar <strong>WEAPON SYSTEMS</strong> upgrade level:</p>
+                            <p><strong>WEAPON LVL 1 (TWIN ROCKETS):</strong> Two agile green rockets steering towards targets.</p>
+                            <p><strong>WEAPON LVL 2 (CLUSTER MISSILES):</strong> Four heavy orange cluster rockets dealing radial splash area damage.</p>
+                            <p><strong>WEAPON LVL 3 (HEX-BURST DARTS):</strong> Six ultra-fast cyan micro-missiles fanning out dynamically.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="screen-footer">
+                    <button id="help-back" class="btn btn-secondary">BACK TO BASE</button>
+                </div>
+            </div>
+
+            <!-- 4. LEADERBOARD SCREEN -->
+            <div id="leaderboard-screen" class="ui-screen">
+                <div class="screen-header">
+                    <h2>HIGH SCORE ARCHIVES</h2>
+                </div>
+
+                <div class="leaderboard-table-container">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>RANK</th>
+                                <th>PILOT ID</th>
+                                <th>PLANE</th>
+                                <th>STAGE</th>
+                                <th>SCORE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-rows">
+                            <!-- High scores populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="screen-footer">
+                    <button id="leaderboard-back" class="btn btn-secondary">BACK</button>
+                </div>
+            </div>
+
+            <!-- 5. GAMEOVER / VICTORY SCREEN -->
+            <div id="gameover-screen" class="ui-screen">
+                <div class="brand-header">
+                    <h1 id="gameover-title" class="glowing-text">MISSION FAILED</h1>
+                    <p id="gameover-subtitle">PILOT KIA - ACQUISITION PROTOCOL INCOMPLETE</p>
+                </div>
+
+                <div class="stats-panel glassmorphic-panel">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-label">FINAL SCORE</span>
+                            <span id="final-score" class="stat-val text-primary glowing-text">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">STARS COLLECTED</span>
+                            <span id="final-stars" class="stat-val text-accent">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">ENEMIES DESTRUCTED</span>
+                            <span id="final-kills" class="stat-val">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">ACCURACY RATE</span>
+                            <span id="final-accuracy" class="stat-val">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pilot-initials-box" id="initials-entry-box">
+                    <label for="pilot-initials">ENTER PILOT CALLSIGN:</label>
+                    <input type="text" id="pilot-initials" maxlength="3" placeholder="PIL" value="PIL">
+                    <button id="btn-save-score" class="btn btn-upgrade">RECORD PROTOCOL</button>
+                </div>
+
+                <div class="menu-actions">
+                    <button id="btn-retry" class="btn btn-primary btn-glow">RELAUNCH MISSION</button>
+                    <button id="btn-gameover-menu" class="btn btn-secondary">RETURN TO BASE</button>
+                </div>
+            </div>
+
+            <!-- 6. PAUSE SCREEN (Hidden overlay) -->
+            <div id="pause-screen" class="ui-screen">
+                <div class="brand-header">
+                    <h1 class="glowing-text">TACTICAL PAUSE</h1>
+                    <p>TRANSMISSION SUSPENDED</p>
+                </div>
+                <div class="menu-actions">
+                    <button id="btn-resume" class="btn btn-primary btn-glow">RESUME OPERATION</button>
+                    <button id="btn-pause-menu" class="btn btn-secondary">ABORT MISSION</button>
+                </div>
+            </div>
+
+        </div>
+        </div>
+    </div>
+
+    <!-- Core Game Scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
